@@ -20,19 +20,16 @@ Ensure you have the necessary Python packages installed. The dependencies are li
 
 To process a SINEX file, use the following command:
 
-\`\`\`bash
-python gfzload2snx.py <sinex_file_path> <model_id> <frame>
-\`\`\`
+```python gfzload2snx.py <sinex_file_path> <model_id> <frame>
+```
 
-- \`<sinex_file_path>\`: Path to the SINEX file to be processed.
-- \`<model_id>\`: Model ID to be used (e.g., \`A\`, \`O\`, \`S\`, \`H\`).
-- \`<frame>\`: Reference frame (\`cf\` or \`cm\`).
+- `<sinex_file_path>`: Path to the SINEX file to be processed.
+- `<model_id>`: Model ID to be used (e.g.,`A`, `O`, `S`, `H`).
+- `<frame>`: Reference frame (`cf` or `cm`).
 
 ### Example
 
-\`\`\`bash
-python gfzload2snx.py SAMPLE_SNX_FILES/COD0R03FIN/COD0R03FIN_20181260000_01D_01D_SOL.SNX AHOS cf
-\`\`\`
+```python gfzload2snx.py SAMPLE_SNX_FILES/COD0R03FIN/COD0R03FIN_20181260000_01D_01D_SOL.SNX AHOS cf```
 
 ### Logging
 
@@ -49,3 +46,6 @@ Contributions are welcome! Please fork the repository and create a pull request 
 ## Contact
 
 If you have any questions or need further assistance, feel free to contact me: radoslaw.zajdel@pecny.cz
+
+## Acknowledgement
+The repository developed under the "BENEFITS OF INTEGRATED GNSS 4 GEODESY, GEOPHYSICS, AND GEODYNAMICS" project, was facilitated through the MERIT Postdoctoral Fellowship. This project received funding from the European Commission, specifically from the MSCA-COFUND Horizon Europe call, along with additional financial support from the Central Bohemian Region's budget.
