@@ -20,8 +20,7 @@ Ensure you have the necessary Python packages installed. The dependencies are li
 
 To process a SINEX file, use the following command:
 
-```python gfzload2snx.py <sinex_file_path> <model_id> <frame>
-```
+```python gfzload2snx.py <sinex_file_path> <model_id> <frame>```
 
 - `<sinex_file_path>`: Path to the SINEX file to be processed.
 - `<model_id>`: Model ID to be used (e.g.,`A`, `O`, `S`, `H`).
