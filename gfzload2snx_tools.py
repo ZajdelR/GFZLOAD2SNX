@@ -240,7 +240,7 @@ def write_sinex_versatile(sinex_path_in, id_block, df_update, sinex_path_out=Non
         file.write(updated_content)
 
 
-def to_scientific_notation(num, digits):
+def to_scientific_notation_snx(num, digits):
     # Convert to scientific notation
     scientific_str = "{:.{}e}".format(num, digits)
 
@@ -260,7 +260,7 @@ def to_scientific_notation(num, digits):
         return f"0.{coefficient_str[2:]}E+{exponent:02d}"
 
 
-def to_scientific_notation_dev(num, digits):
+def to_scientific_notation_snx_dev(num, digits):
     # Convert to scientific notation
     scientific_str = "{:.{}e}".format(num, digits)
 

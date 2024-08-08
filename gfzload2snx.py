@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument('mode', type=str, help="Processing mode", choices=['correct', 'replace'])
 
     ## UNCOMMENT IF YOU WANT TO RUN IN DEBUG MODE
-    sys.argv = ['disp_to_snx.py', 'SAMPLE_SNX_FILES/COD0R03FIN/COD0R03FIN_20181260000_01D_01D_SOL.SNX', 'AHOS', 'cf', 'correct']
+    sys.argv = ['disp_to_snx.py', 'SAMPLE_SNX_FILES/COD0R03FIN/COD0R03FIN_20181260000_01D_01D_SOL.SNX', 'AHOS', 'cf', 'replace']
     args = parser.parse_args()
 
     try:
