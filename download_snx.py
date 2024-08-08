@@ -121,7 +121,7 @@ def main():
     parser.add_argument('--cddis_dir', type=str, default='/gnss/products/repro3', help="SNX directory (e.g., '/gnss/products/repro3').")
 
     # For testing purposes, you can override sys.argv like this:
-    sys.argv = ["script_name", "--start_week=2000", "--end_week=2000", "--ac=COD"]
+    # sys.argv = ["script_name", "--start_week=2000", "--end_week=2000", "--ac=COD"]
     args = parser.parse_args()
 
     # Load credentials from an external configuration file

@@ -17,7 +17,7 @@ def main():
                         help="Output directory (default: 'SOLUTION_PICKLES').")
 
     # For testing purposes, you can override sys.argv like this:
-    sys.argv = ["script_name", "ABMF", "--frame=cf", "--model=AOSH", "--remove_low_freqs=500", "--plot_results", "--inp_file_dir=SAMPLE_NTLD_GFZ", "--out_dir=SOLUTION_PICKLES"]
+    # sys.argv = ["script_name", "ABMF", "--frame=cf", "--model=AOSH", "--remove_low_freqs=500", "--plot_results", "--inp_file_dir=SAMPLE_NTLD_GFZ", "--out_dir=SOLUTION_PICKLES"]
 
     args = parser.parse_args()
 
