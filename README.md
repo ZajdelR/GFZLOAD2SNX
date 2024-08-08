@@ -67,6 +67,8 @@ We would like to thank the German Research Centre for Geosciences (GFZ) for prov
 
 The repository developed under the "BENEFITS OF INTEGRATED GNSS 4 GEODESY, GEOPHYSICS, AND GEODYNAMICS" project, was facilitated through the MERIT Postdoctoral Fellowship. This project received funding from the European Commission, specifically from the MSCA-COFUND Horizon Europe call, along with additional financial support from the Central Bohemian Region's budget.
 
+![MERIT_FOOTER.png](./img/MERIT_FOOTER.png)
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
