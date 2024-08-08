@@ -8,7 +8,7 @@ def setup_logging():
     """
     Sets up the logging configuration with a specific format and level.
     """
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='log_gfzload2snx.log',level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def validate_inputs(snx_path, model_id, frame, mode):
     """

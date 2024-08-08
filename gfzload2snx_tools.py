@@ -1,156 +1,9 @@
 import numpy as np
-import scipy.signal as signal
-import os
 from geodezyx import utils
 from geodezyx import conv
 import pandas as pd
 import re
 from io import StringIO
-
-
-def get_model_files(model_descriptor):
-    """
-    Maps a model identifier to the corresponding model type.
-
-    Parameters:
-    model_descriptor (str): Model descriptor containing identifiers.
-
-    Returns:
-    list: List of model types.
-    """
-    mapper = {'A': 'ntal', 'O': 'ntol', 'S': 'slel', 'H': 'cwsl'}
-    model = [mapper[x] for x in model_descriptor]
-    return model
-
-
-def get_model_type(filename):
-    """
-    Determines the model type based on the filename.
-
-    Parameters:
-    filename (str): Name of the file.
-
-    Returns:
-    str: Model type identifier.
-    """
-    if '.ntal.' in filename:
-        return 'A'
-    elif '.ntol.' in filename:
-        return 'O'
-    elif '.slel.' in filename:
-        return 'S'
-    elif '.cwsl.' in filename:
-        return 'H'
-    else:
-        return 'Unknown'
-
-
-def get_unique_prefixes(directory):
-    """
-    Retrieves unique file prefixes from a directory.
-
-    Parameters:
-    directory (str): Path to the directory.
-
-    Returns:
-    set: Unique prefixes from the files in the directory.
-    """
-    files = os.listdir(directory)
-    prefixes = [file[:4] for file in files if os.path.isfile(os.path.join(directory, file))]
-    unique_prefixes = set(prefixes)
-    return unique_prefixes
-
-
-def load_files(file_paths):
-    """
-    Loads data files and returns a dictionary of DataFrames.
-
-    Parameters:
-    file_paths (list): List of file paths to load.
-
-    Returns:
-    dict: Dictionary with keys as station and model type, and values as DataFrames.
-    """
-    dataframes = {}
-    for file_path in file_paths:
-        df = pd.read_csv(file_path, delim_whitespace=True, comment='#', header=None)
-        df.columns = ['yyyy', 'mm', 'dd', 'hh', 'R', 'EW', 'NS']
-        df['datetime'] = pd.to_datetime(df[['yyyy', 'mm', 'dd', 'hh']].astype(str).agg('-'.join, axis=1),
-                                        format='%Y-%m-%d-%H')
-        df.drop(columns=['yyyy', 'mm', 'dd', 'hh'], inplace=True)
-        df.set_index('datetime', inplace=True)
-        daily_mean_df = df.resample('D').mean()
-        station = os.path.basename(file_path)[:4]
-        model_type = get_model_type(file_path)
-        key = f"{station}_{model_type}"
-        dataframes[key] = daily_mean_df
-    return dataframes
-
-
-def high_pass_filter(data, column, cutoff_days):
-    """
-    Applies a high-pass filter to a specific column in a DataFrame.
-
-    Parameters:
-    data (pd.DataFrame): DataFrame containing the data.
-    column (str): Name of the column to apply the filter to.
-    cutoff_days (int): Cutoff frequency in days.
-
-    Returns:
-    np.ndarray: Filtered data.
-    """
-    cutoff_freq = 1 / cutoff_days
-    (b, a) = signal.butter(1, cutoff_freq, btype='high', fs=1)
-    filtered_data = signal.filtfilt(b, a, data[column])
-    return filtered_data
-
-
-def filter_frequencies(dataframes, cutoff_days=500):
-    """
-    Filters frequencies from the dataframes using a high-pass filter.
-
-    Parameters:
-    dataframes (dict): Dictionary of DataFrames to filter.
-    cutoff_days (int): Cutoff frequency in days.
-
-    Returns:
-    dict: Dictionary of filtered DataFrames.
-    """
-    filtered_dataframes = {}
-    for key, df in dataframes.items():
-        filtered_df = df.copy()
-        for column in df.columns:
-            if column in ['R', 'EW', 'NS']:
-                filtered_df[column] = high_pass_filter(df, column, cutoff_days)
-        filtered_dataframes[key] = filtered_df
-    return filtered_dataframes
-
-
-def combine_selected_files(filtered_dataframes):
-    """
-    Combines selected filtered DataFrames into a single DataFrame.
-
-    Parameters:
-    filtered_dataframes (dict): Dictionary of filtered DataFrames.
-
-    Returns:
-    tuple: Combined DataFrame and solution name.
-    """
-    combined_df = sum(filtered_dataframes.values())
-    solution_name = ''.join(sorted([x.split('_')[-1] for x in list(filtered_dataframes.keys())]))
-    return combined_df, solution_name
-
-
-def save_combined_data(combined_df, output_file):
-    """
-    Saves the combined DataFrame to a file.
-
-    Parameters:
-    combined_df (pd.DataFrame): Combined DataFrame.
-    output_file (str): Path to the output file.
-    """
-    combined_df.to_pickle(output_file)
-
 
 def ecef_to_geodetic(x, y, z):
     """
@@ -231,7 +84,6 @@ def apply_displacements(df):
     df['STAZ'] += df['dZ']
 
     return df
-
 
 def write_sinex_versatile(sinex_path_in, id_block, df_update, sinex_path_out=None, suffix_name=""):
     """
