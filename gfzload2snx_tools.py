@@ -3,6 +3,10 @@ import scipy.signal as signal
 import os
 from geodezyx import utils
 from geodezyx import conv
+import pandas as pd
+import re
+from io import StringIO
+
 
 def get_model_files(model_descriptor):
     """
@@ -17,6 +21,7 @@ def get_model_files(model_descriptor):
     mapper = {'A': 'ntal', 'O': 'ntol', 'S': 'slel', 'H': 'cwsl'}
     model = [mapper[x] for x in model_descriptor]
     return model
+
 
 def get_model_type(filename):
     """
@@ -39,6 +44,7 @@ def get_model_type(filename):
     else:
         return 'Unknown'
 
+
 def get_unique_prefixes(directory):
     """
     Retrieves unique file prefixes from a directory.
@@ -53,6 +59,7 @@ def get_unique_prefixes(directory):
     prefixes = [file[:4] for file in files if os.path.isfile(os.path.join(directory, file))]
     unique_prefixes = set(prefixes)
     return unique_prefixes
+
 
 def load_files(file_paths):
     """
@@ -79,6 +86,7 @@ def load_files(file_paths):
         dataframes[key] = daily_mean_df
     return dataframes
 
+
 def high_pass_filter(data, column, cutoff_days):
     """
     Applies a high-pass filter to a specific column in a DataFrame.
@@ -95,6 +103,7 @@ def high_pass_filter(data, column, cutoff_days):
     (b, a) = signal.butter(1, cutoff_freq, btype='high', fs=1)
     filtered_data = signal.filtfilt(b, a, data[column])
     return filtered_data
+
 
 def filter_frequencies(dataframes, cutoff_days=500):
     """
@@ -116,6 +125,7 @@ def filter_frequencies(dataframes, cutoff_days=500):
         filtered_dataframes[key] = filtered_df
     return filtered_dataframes
 
+
 def combine_selected_files(filtered_dataframes):
     """
     Combines selected filtered DataFrames into a single DataFrame.
@@ -130,6 +140,7 @@ def combine_selected_files(filtered_dataframes):
     solution_name = ''.join(sorted([x.split('_')[-1] for x in list(filtered_dataframes.keys())]))
     return combined_df, solution_name
 
+
 def save_combined_data(combined_df, output_file):
     """
     Saves the combined DataFrame to a file.
@@ -139,6 +150,7 @@ def save_combined_data(combined_df, output_file):
     output_file (str): Path to the output file.
     """
     combined_df.to_pickle(output_file)
+
 
 def ecef_to_geodetic(x, y, z):
     """
@@ -162,6 +174,7 @@ def ecef_to_geodetic(x, y, z):
     lat = np.arctan2(z + ep ** 2 * b * np.sin(theta) ** 3, p - e2 * a * np.cos(theta) ** 3)
 
     return lat, lon
+
 
 def topo_to_ecef(lat, lon, NS, EW, R):
     """
@@ -194,6 +207,7 @@ def topo_to_ecef(lat, lon, NS, EW, R):
 
     return d_ecef[0], d_ecef[1], d_ecef[2]
 
+
 def apply_displacements(df):
     """
     Converts displacements from local topocentric to ECEF and adds them to the coordinates.
@@ -218,9 +232,6 @@ def apply_displacements(df):
 
     return df
 
-import pandas as pd
-import re
-from io import StringIO
 
 def write_sinex_versatile(sinex_path_in, id_block, df_update, sinex_path_out=None, suffix_name=""):
     """
@@ -230,7 +241,8 @@ def write_sinex_versatile(sinex_path_in, id_block, df_update, sinex_path_out=Non
     sinex_path_in (str): Path to the input SINEX file.
     id_block (str): Name of the block to be updated (without "+" or "-").
     df_update (pd.DataFrame): DataFrame containing the new data to replace the existing block.
-    sinex_path_out (str, optional): Path to save the updated SINEX file. If not provided, the file will be saved with a prefix "UPD_" in the same location.
+    sinex_path_out (str, optional): Path to save the updated SINEX file. If not provided,
+    the file will be saved with a prefix "UPD_" in the same location.
     suffix_name (str): Optional suffix for the output SINEX file.
 
     Returns:
@@ -253,7 +265,7 @@ def write_sinex_versatile(sinex_path_in, id_block, df_update, sinex_path_out=Non
 
     header = df_update.to_string(index=False, header=True)
     block_content = f"{id_block_strt[1:]}\n{header}\n{id_block_end[1:]}\n"
-    block_content = block_content.replace(' INDEX','*INDEX')
+    block_content = block_content.replace(' INDEX', '*INDEX')
 
     updated_content = content_before + block_content + content_after
 
@@ -262,6 +274,7 @@ def write_sinex_versatile(sinex_path_in, id_block, df_update, sinex_path_out=Non
 
     with open(sinex_path_out, 'w') as file:
         file.write(updated_content)
+
 
 def to_scientific_notation_snx(num, digits):
     """
@@ -287,6 +300,7 @@ def to_scientific_notation_snx(num, digits):
     else:
         return f"0.{coefficient_str[2:]}E+{exponent:02d}"
 
+
 def to_scientific_notation_snx_dev(num, digits):
     """
     Converts a number to SINEX-compatible scientific notation for standard deviations.
@@ -308,6 +322,7 @@ def to_scientific_notation_snx_dev(num, digits):
 
     return f".{coefficient_str[2:]}E{exponent:03d}"
 
+
 def read_sinex_versatile(sinex_path_in, id_block, convert_date_2_dt=True, header_line_idx=-1,
                          improved_header_detection=True, verbose=False):
     """
@@ -327,8 +342,8 @@ def read_sinex_versatile(sinex_path_in, id_block, convert_date_2_dt=True, header
     if id_block in ("+", "-"):
         id_block = id_block[1:]
 
-    id_block_strt = "\+" + id_block
-    id_block_end = "\-" + id_block
+    id_block_strt = r"\+" + id_block
+    id_block_end = r"\-" + id_block
 
     Lines_list = utils.extract_text_between_elements_2(sinex_path_in, id_block_strt, id_block_end)
     Lines_list = Lines_list[1:-1]
@@ -358,13 +373,13 @@ def read_sinex_versatile(sinex_path_in, id_block, convert_date_2_dt=True, header
             Fields_size = []
             for fld_head_split in Header_split:
                 if fld_head_split[0] == "*":
-                    fld_head_regex = re.compile("\*" + fld_head_split[1:] + " *")
+                    fld_head_regex = re.compile(r"\*" + fld_head_split[1:] + " *")
                 else:
                     fld_head_regex_str = fld_head_split + " *"
-                    fld_head_regex_str = fld_head_regex_str.replace("[", "\[")
-                    fld_head_regex_str = fld_head_regex_str.replace("]", "\]")
-                    fld_head_regex_str = fld_head_regex_str.replace("(", "\(")
-                    fld_head_regex_str = fld_head_regex_str.replace(")", "\)")
+                    fld_head_regex_str = fld_head_regex_str.replace("[", r"\[")
+                    fld_head_regex_str = fld_head_regex_str.replace("]", r"\]")
+                    fld_head_regex_str = fld_head_regex_str.replace("(", r"\(")
+                    fld_head_regex_str = fld_head_regex_str.replace(")", r"\)")
 
                     fld_head_regex = re.compile(fld_head_regex_str)
 
@@ -388,7 +403,7 @@ def read_sinex_versatile(sinex_path_in, id_block, convert_date_2_dt=True, header
         except pd.errors.EmptyDataError as ee:
             print("ERR: something goes wrong in the header index position")
             print("     try to give its right position manually with header_line_idx")
-            raise (ee)
+            raise ee
 
         DF = DF.set_axis(Header_split, axis=1)
 
