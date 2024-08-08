@@ -4,6 +4,7 @@ import os
 import gzip
 import logging
 import configparser
+import sys
 
 # Setup basic configuration for logging
 logging.basicConfig(filename='download_logs.log', level=logging.INFO,
@@ -119,6 +120,8 @@ def main():
     parser.add_argument('--ac', type=str, required=True, help="Analysis center code (e.g., 'COD').")
     parser.add_argument('--cddis_dir', type=str, default='/gnss/products/repro3', help="SNX directory (e.g., '/gnss/products/repro3').")
 
+    # For testing purposes, you can override sys.argv like this:
+    sys.argv = ["script_name", "--start_week=2000", "--end_week=2000", "--ac=COD"]
     args = parser.parse_args()
 
     # Load credentials from an external configuration file
