@@ -2,16 +2,27 @@ import argparse
 from ftplib import FTP_TLS
 import os
 import gzip
-import concurrent.futures
 import logging
-import sys
 
 # Setup basic configuration for logging
 logging.basicConfig(filename='download_logs.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-
 def download_and_unzip_file(host, user, passwd, directory, filename, local_subfolder):
+    """
+    Downloads a file from an FTP server and unzips it locally.
+
+    Parameters:
+    - host (str): The hostname of the FTP server.
+    - user (str): The username for the FTP login.
+    - passwd (str): The password for the FTP login.
+    - directory (str): The remote directory on the FTP server where the file is located.
+    - filename (str): The name of the file to be downloaded.
+    - local_subfolder (str): The local directory where the file should be saved.
+
+    Returns:
+    - None
+    """
     try:
         # Establish a new secure FTP connection for each thread
         ftps = FTP_TLS(host=host)
@@ -51,8 +62,22 @@ def download_and_unzip_file(host, user, passwd, directory, filename, local_subfo
         if 'ftps' in locals():
             ftps.quit()
 
-
 def download_and_unzip_snx_files(host, user, passwd, base_directory, week, local_directory, ac):
+    """
+    Downloads and unzips all SNX files for a given GPS week from an FTP server.
+
+    Parameters:
+    - host (str): The hostname of the FTP server.
+    - user (str): The username for the FTP login.
+    - passwd (str): The password for the FTP login.
+    - base_directory (str): The base directory on the FTP server where the SNX files are located.
+    - week (int): The GPS week number to download files for.
+    - local_directory (str): The local directory where the files should be saved.
+    - ac (str): The analysis center code to filter the files.
+
+    Returns:
+    - None
+    """
     directory = f"{base_directory}/{week}/"
     if not os.path.exists(local_directory):
         os.makedirs(local_directory)
@@ -73,6 +98,19 @@ def download_and_unzip_snx_files(host, user, passwd, base_directory, week, local
         download_and_unzip_file(host, user, passwd, directory, filename, local_subfolder)
 
 def main():
+    """
+    Main function to handle command-line arguments and initiate the download process.
+
+    Command-line Arguments:
+    - --start_week: Starting GPS week number (int).
+    - --end_week: Ending GPS week number (int).
+    - --local_directory: Local directory to save the files (str).
+    - --ac: Analysis center code to filter the files (str).
+    - --cddis_dir: The directory on the FTP server where the SNX files are stored (str).
+
+    Returns:
+    - None
+    """
     parser = argparse.ArgumentParser(description="Download and unzip SNX files from an FTP server.")
     parser.add_argument('--start_week', type=int, required=True, help="Starting GPS week number.")
     parser.add_argument('--end_week', type=int, required=True, help="Ending GPS week number.")
@@ -81,7 +119,7 @@ def main():
     parser.add_argument('--cddis_dir', type=str, default='/gnss/products/repro3', help="SNX directory (e.g., '/gnss/products/repro3').")
 
     # For testing purposes, you can override sys.argv like this:
-    #sys.argv = ["script_name", "--start_week=2000", "--end_week=2000","--ac=COD"]
+    # sys.argv = ["script_name", "--start_week=2000", "--end_week=2000", "--ac=COD"]
     args = parser.parse_args()
 
     # Configuration
