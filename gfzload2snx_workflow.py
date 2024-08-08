@@ -5,9 +5,25 @@ from geodezyx import conv
 import pandas as pd
 
 def setup_logging():
+    """
+    Sets up the logging configuration with a specific format and level.
+    """
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def validate_inputs(snx_path, model_id, frame, mode):
+    """
+    Validates the inputs provided by the user.
+
+    Parameters:
+    snx_path (str): Path to the SINEX file.
+    model_id (str): Identifier of the model to use.
+    frame (str): Reference frame.
+    mode (str): Mode of operation, either 'correct' or 'replace'.
+
+    Raises:
+    FileNotFoundError: If the SINEX file is not found.
+    ValueError: If any of the other inputs are invalid.
+    """
     if not os.path.isfile(snx_path):
         logging.error(f"SINEX file not found: {snx_path}")
         raise FileNotFoundError(f"SINEX file not found: {snx_path}")
@@ -22,6 +38,19 @@ def validate_inputs(snx_path, model_id, frame, mode):
         raise ValueError(f"Invalid mode: {mode}")
 
 def process_station(apr_crd, station, model_id, frame, mode):
+    """
+    Processes a station by reading model displacements and applying them to the apriori coordinates.
+
+    Parameters:
+    apr_crd (pd.DataFrame): DataFrame containing apriori coordinates.
+    station (str): Station code.
+    model_id (str): Identifier of the model to use.
+    frame (str): Reference frame.
+    mode (str): Mode of operation, either 'correct' or 'replace'.
+
+    Returns:
+    pd.DataFrame: DataFrame with updated coordinates or None if processing fails.
+    """
     apr_columns = apr_crd.columns
     type_column = next((x for x in apr_columns if 'TYPE' in x), None)
     epoch_column = next((x for x in apr_columns if 'EPOCH' in x), None)
@@ -64,6 +93,18 @@ def process_station(apr_crd, station, model_id, frame, mode):
     return apr_crd_new
 
 def process_sinex(snx_path, model_id, frame, mode):
+    """
+    Processes a SINEX file by applying model displacements to the stations.
+
+    Parameters:
+    snx_path (str): Path to the SINEX file.
+    model_id (str): Identifier of the model to use.
+    frame (str): Reference frame.
+    mode (str): Mode of operation, either 'correct' or 'replace'.
+
+    Returns:
+    None
+    """
     validate_inputs(snx_path, model_id, frame, mode)
     dfapr = gfztl.read_sinex_versatile(snx_path, "SOLUTION/APRIORI")
     snx_block = []
@@ -83,6 +124,19 @@ def process_sinex(snx_path, model_id, frame, mode):
     update_sinex_estimates(snx_path, snx_block_df, "SOLUTION/ESTIMATE", mode, suffix_name=suffix_name)
 
 def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name=""):
+    """
+    Updates the SINEX file with new estimates based on the processed station data.
+
+    Parameters:
+    snx_path (str): Path to the SINEX file.
+    snx_block_df (pd.DataFrame): DataFrame containing the updated estimates.
+    id_block (str): Block ID in the SINEX file to be updated.
+    mode (str): Mode of operation, either 'correct' or 'replace'.
+    suffix_name (str): Optional suffix for the output SINEX file name.
+
+    Returns:
+    None
+    """
     dfest = gfztl.read_sinex_versatile(snx_path, id_block)
     value_column = next((x for x in dfest.columns if 'ESTIMATE' in x), None)
     epoch_column = next((x for x in dfest.columns if 'EPOCH' in x), None)
