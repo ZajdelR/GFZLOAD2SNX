@@ -10,7 +10,6 @@ def get_model_files(model_descriptor):
     model = [mapper[x] for x in model_descriptor]
     return model
 
-
 def get_model_type(filename):
     if '.ntal.' in filename:
         return 'A'
