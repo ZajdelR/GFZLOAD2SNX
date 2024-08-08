@@ -1,0 +1,4 @@
+[FTP]
+host = gdc.cddis.eosdis.nasa.gov
+user = anonymous
+passwd = your_email@example.com

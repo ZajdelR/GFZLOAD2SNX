@@ -3,6 +3,7 @@ from ftplib import FTP_TLS
 import os
 import gzip
 import logging
+import configparser
 
 # Setup basic configuration for logging
 logging.basicConfig(filename='download_logs.log', level=logging.INFO,
@@ -118,14 +119,14 @@ def main():
     parser.add_argument('--ac', type=str, required=True, help="Analysis center code (e.g., 'COD').")
     parser.add_argument('--cddis_dir', type=str, default='/gnss/products/repro3', help="SNX directory (e.g., '/gnss/products/repro3').")
 
-    # For testing purposes, you can override sys.argv like this:
-    # sys.argv = ["script_name", "--start_week=2000", "--end_week=2000", "--ac=COD"]
     args = parser.parse_args()
 
-    # Configuration
-    host = 'gdc.cddis.eosdis.nasa.gov'
-    user = 'anonymous'
-    passwd = 'radoslaw.zajdel@igig.up.wroc.pl'  # Replace with your email
+    # Load credentials from an external configuration file
+    config = configparser.ConfigParser()
+    config.read('ftp_config.ini')
+    host = config.get('FTP', 'host')
+    user = config.get('FTP', 'user')
+    passwd = config.get('FTP', 'passwd')
 
     # Loop through the range of weeks and download/unzip files for each
     for week in range(args.start_week, args.end_week + 1):
