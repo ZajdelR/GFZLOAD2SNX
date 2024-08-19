@@ -138,10 +138,13 @@ def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name="
     None
     """
     dfest = gfztl.read_sinex_versatile(snx_path, id_block)
+    dfest = dfest.rename(columns={"INDEX":r"*INDEX"})
     value_column = next((x for x in dfest.columns if 'ESTIMATE' in x), None)
     epoch_column = next((x for x in dfest.columns if 'EPOCH' in x), None)
     type_column = next((x for x in dfest.columns if 'TYPE' in x), None)
     std_dev_column = next((x for x in dfest.columns if 'DEV' in x), None)
+    index_column = next((x for x in dfest.columns if 'INDEX' in x), None)
+    unit_column = next((x for x in dfest.columns if 'UNIT' in x), None)
 
     if value_column is None or epoch_column is None or type_column is None or std_dev_column is None:
         logging.error("Missing expected columns in SOLUTION/ESTIMATE. Exiting...")
@@ -149,7 +152,7 @@ def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name="
 
     new_est = snx_block_df[['CODE', epoch_column, type_column, 'NEW_VALUE']]
     dfest_new = pd.merge(dfest, new_est, on=['CODE', epoch_column, type_column], how='left')
-    dfest_new2 = dfest_new.copy()
+    # dfest_new2 = dfest_new.copy()
     if mode == "replace":
         dfest_new[value_column] = dfest_new.apply(
             lambda row: row['NEW_VALUE'] if pd.notnull(row['NEW_VALUE']) else row[value_column],
@@ -164,8 +167,14 @@ def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name="
         logging.error("Wrong mode specified.")
     dfest_new.drop('NEW_VALUE', inplace=True, axis=1)
     dfest_new[epoch_column] = dfest_new[epoch_column].apply(lambda x: conv.dt_2_sinex_datestr(x))
-    dfest_new[value_column] = dfest_new[value_column].apply(lambda x: gfztl.to_scientific_notation_snx(x, digits=17))
+    dfest_new[value_column] = dfest_new[value_column].apply(lambda x: gfztl.to_scientific_notation_snx(x, digits=len(value_column)))
     dfest_new[std_dev_column] = dfest_new[std_dev_column].apply(lambda x: gfztl.to_scientific_notation_snx_dev(x, digits=7))
+
+    for column in [type_column,unit_column,value_column]:
+        dfest_new[column] = dfest_new[column].apply(lambda x: str(x).ljust(len(column)))
+    dfest_new['S'] = dfest_new['S'].apply(lambda x: str(x).rjust(1))
+    for column in [index_column]:
+        dfest_new[column] = dfest_new[column].apply(lambda x: str(x).rjust(len(column)))
 
     gfztl.write_sinex_versatile(snx_path, 'SOLUTION/ESTIMATE', dfest_new, suffix_name=suffix_name)
     logging.info(f"Updated SINEX file saved: {snx_path}")
