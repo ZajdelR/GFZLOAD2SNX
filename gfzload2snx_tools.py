@@ -84,6 +84,36 @@ def apply_displacements(df):
     df['STAZ'] += df['dZ']
 
     return df
+def create_custom_solution_name(model_id: str, frame: str, mode: str) -> str:
+    # Define the order of letters expected in model_id
+    expected_letters = "AHOS"
+
+    # Construct the AHOS part by checking for each letter in model_id
+    ahos_part = ''.join([letter if letter in model_id else 'X' for letter in expected_letters])
+
+    # Ensure frame is exactly 3 characters by padding if necessary
+    frame = frame.ljust(2)[:2].upper()
+
+    # Take the first letter of mode and capitalize it
+    mode_letter = mode[0].upper()
+
+    # Combine all parts to form the final string
+    result = ahos_part + frame + mode_letter
+
+    return result
+
+
+def replace_solution_in_snx_filename(path: str, replacement: str) -> str:
+    # Split the path into the directory and filename
+    directory, filename = path.rsplit('/', 1)
+
+    # Replace characters in the specified range (indexes 4 to 10) with the replacement string
+    new_filename = filename[:4] + replacement + filename[10:]
+
+    # Combine the directory and the new filename to form the new path
+    new_path = f"{directory}/{new_filename}"
+
+    return new_path
 
 def write_sinex_versatile(sinex_path_in, id_block, df_update, sinex_path_out=None, suffix_name=""):
     """
@@ -122,7 +152,8 @@ def write_sinex_versatile(sinex_path_in, id_block, df_update, sinex_path_out=Non
     updated_content = content_before + block_content + content_after
 
     if not sinex_path_out:
-        sinex_path_out = sinex_path_in + suffix_name
+
+        sinex_path_out = replace_solution_in_snx_filename(sinex_path_in,suffix_name)
 
     with open(sinex_path_out, 'w') as file:
         file.write(updated_content)
