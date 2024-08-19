@@ -92,7 +92,7 @@ def create_custom_solution_name(model_id: str, frame: str, mode: str) -> str:
     ahos_part = ''.join([letter if letter in model_id else 'X' for letter in expected_letters])
 
     # Ensure frame is exactly 3 characters by padding if necessary
-    frame = frame.ljust(2)[:2].upper()
+    frame = frame[-1].upper()
 
     # Take the first letter of mode and capitalize it
     mode_letter = mode[0].upper()
@@ -152,7 +152,6 @@ def write_sinex_versatile(sinex_path_in, id_block, df_update, sinex_path_out=Non
     updated_content = content_before + block_content + content_after
 
     if not sinex_path_out:
-
         sinex_path_out = replace_solution_in_snx_filename(sinex_path_in,suffix_name)
 
     with open(sinex_path_out, 'w') as file:
@@ -176,12 +175,20 @@ def to_scientific_notation_snx(num, digits):
     coefficient = float(coefficient) / 10
     exponent = int(exponent) + 1
 
-    coefficient_str = f"{abs(coefficient):.{digits - 2}f}"
+    coefficient_str = f"{abs(coefficient):.{digits - 6}f}"
+
+    exponent_sign = lambda exponent: "+" if exponent > 0 else "-"
+    exponent_sign = exponent_sign(exponent)
 
     if coefficient < 0:
-        return f"-.{coefficient_str[2:]}E+{exponent:02d}"
+        final_string = f"-.{coefficient_str[2:]}E{exponent_sign}{abs(exponent):02d}"
     else:
-        return f"0.{coefficient_str[2:]}E+{exponent:02d}"
+        final_string =  f"0.{coefficient_str[2:]}E{exponent_sign}{abs(exponent):02d}"
+
+    if len(final_string) == digits:
+        return(final_string)
+    else:
+        print(final_string + " <--- FAIL")
 
 
 def to_scientific_notation_snx_dev(num, digits):
