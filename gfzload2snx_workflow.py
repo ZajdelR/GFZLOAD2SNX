@@ -120,7 +120,7 @@ def process_sinex(snx_path, model_id, frame, mode):
         return
 
     snx_block_df = pd.concat(snx_block, axis=0)
-    suffix_name = f".{model_id}_{frame}_{mode[:3].upper()}"
+    suffix_name = gfztl.create_custom_solution_name(model_id,frame,mode)
     update_sinex_estimates(snx_path, snx_block_df, "SOLUTION/ESTIMATE", mode, suffix_name=suffix_name)
 
 def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name=""):
