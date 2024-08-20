@@ -92,7 +92,7 @@ def process_station(apr_crd, station, model_id, frame, mode):
     apr_crd_new = pd.merge(apr_crd.copy(), df_unstacked, on=[epoch_column, type_column])
     return apr_crd_new
 
-def process_sinex(snx_path, model_id, frame, mode):
+def process_sinex(snx_path, model_id, frame, mode, change_part):
     """
     Processes a SINEX file by applying model displacements to the stations.
 
@@ -121,7 +121,7 @@ def process_sinex(snx_path, model_id, frame, mode):
 
     snx_block_df = pd.concat(snx_block, axis=0)
     suffix_name = gfztl.create_custom_solution_name(model_id,frame,mode)
-    update_sinex_estimates(snx_path, snx_block_df, "SOLUTION/ESTIMATE", mode, suffix_name=suffix_name)
+    update_sinex_estimates(snx_path, snx_block_df, f"SOLUTION/{change_part.upper()}", mode, suffix_name=suffix_name)
 
 def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name=""):
     """
@@ -137,9 +137,10 @@ def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name="
     Returns:
     None
     """
+    block = id_block.split('/')[-1]
     dfest = gfztl.read_sinex_versatile(snx_path, id_block)
     dfest = dfest.rename(columns={"INDEX":r"*INDEX"})
-    value_column = next((x for x in dfest.columns if 'ESTIMATE' in x), None)
+    value_column = next((x for x in dfest.columns if block in x), None)
     epoch_column = next((x for x in dfest.columns if 'EPOCH' in x), None)
     type_column = next((x for x in dfest.columns if 'TYPE' in x), None)
     std_dev_column = next((x for x in dfest.columns if 'DEV' in x), None)
@@ -147,7 +148,7 @@ def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name="
     unit_column = next((x for x in dfest.columns if 'UNIT' in x), None)
 
     if value_column is None or epoch_column is None or type_column is None or std_dev_column is None:
-        logging.error("Missing expected columns in SOLUTION/ESTIMATE. Exiting...")
+        logging.error(f"Missing expected columns in SOLUTION/{block}. Exiting...")
         return
 
     new_est = snx_block_df[['CODE', epoch_column, type_column, 'NEW_VALUE']]
@@ -167,8 +168,10 @@ def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name="
         logging.error("Wrong mode specified.")
     dfest_new.drop('NEW_VALUE', inplace=True, axis=1)
     dfest_new[epoch_column] = dfest_new[epoch_column].apply(lambda x: conv.dt_2_sinex_datestr(x))
-    dfest_new[value_column] = dfest_new[value_column].apply(lambda x: gfztl.to_scientific_notation_snx(x, digits=len(value_column)))
-    dfest_new[std_dev_column] = dfest_new[std_dev_column].apply(lambda x: gfztl.to_scientific_notation_snx_dev(x, digits=7))
+    dfest_new[value_column] = dfest_new[value_column].apply(
+        lambda x: gfztl.to_scientific_notation_snx(x, digits=len(value_column)))
+    dfest_new[std_dev_column] = dfest_new[std_dev_column].apply(
+        lambda x: gfztl.to_scientific_notation_snx(x, digits=len(std_dev_column)))
 
     for column in [type_column,unit_column,value_column]:
         dfest_new[column] = dfest_new[column].apply(lambda x: str(x).ljust(len(column)))
@@ -176,5 +179,5 @@ def update_sinex_estimates(snx_path, snx_block_df, id_block, mode, suffix_name="
     for column in [index_column]:
         dfest_new[column] = dfest_new[column].apply(lambda x: str(x).rjust(len(column)))
 
-    gfztl.write_sinex_versatile(snx_path, 'SOLUTION/ESTIMATE', dfest_new, suffix_name=suffix_name)
+    gfztl.write_sinex_versatile(snx_path, id_block, dfest_new, suffix_name=suffix_name)
     logging.info(f"Updated SINEX file saved: {snx_path}")
