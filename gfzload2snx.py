@@ -30,6 +30,7 @@ def main():
     parser.add_argument('model_id', type=str, help="GFZ Model ID", choices=['A', 'AHO', 'AHOS', 'AO', 'AOS', 'H', 'O', 'S'])
     parser.add_argument('frame', type=str, help="Reference frame", choices=['cf', 'cm'])
     parser.add_argument('mode', type=str, help="Processing mode", choices=['correct', 'replace'])
+    parser.add_argument('change_part', type=str, help="What to change", choices=['apriori', 'estimate'])
 
     # UNCOMMENT IF YOU WANT TO RUN IN DEBUG MODE
     # sys.argv = ['x', 'SAMPLE_SNX_FILES/COD0R03FIN/COD0R03FIN_20181260000_01D_01D_SOL.SNX', 'AHOS', 'cf', 'replace']
