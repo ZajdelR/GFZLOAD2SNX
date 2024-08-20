@@ -33,7 +33,7 @@ def main():
     parser.add_argument('change_part', type=str, help="What to change", choices=['apriori', 'estimate'])
 
     # UNCOMMENT IF YOU WANT TO RUN IN DEBUG MODE
-    # sys.argv = ['x', 'SAMPLE_SNX_FILES/COD0R03FIN/COD0R03FIN_20181260000_01D_01D_SOL.SNX', 'AHOS', 'cf', 'replace']
+    #sys.argv = ['x', 'SAMPLE_SNX_FILES/COD0R03FIN/COD0R03FIN_20181260000_01D_01D_SOL.SNX', 'AHOS', 'cf', 'correct', 'apriori']
     args = parser.parse_args()
 
     try:
